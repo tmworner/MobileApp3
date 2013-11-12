@@ -26,13 +26,16 @@ public class MainActivity extends Activity
 
         private void showForecast(String zipCode)
         {
-                // HINT: Use bundle to pass arguments to fragment.
-                //
-                //                Bundle bundle = new Bundle();
-                //                bundle.putString("key", "value");
-                //                ForecastFragment.setArguments(bundle);
+                Bundle bundle = new Bundle();
+                bundle.putString(getString(R.string.ZipKey), zipCode);
                 
-                // HINT: FragmentManager().beginTransaction()
+                FragmentForecast fragment = new FragmentForecast();
+                fragment.setArguments(bundle);
+                
+                getFragmentManager().beginTransaction()
+                					.replace(R.id.fragmentFrameLayout, fragment)
+                					.commit();
+                
                 
         }
 

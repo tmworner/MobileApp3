@@ -29,5 +29,6 @@
         <item>94112|San Francisco</item>
         <item>98101|Seattle</item>
     </string-array>
+    <string name="ZipKey">ZipCode</string>
 
 </resources>

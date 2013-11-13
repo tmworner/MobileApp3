@@ -89,7 +89,7 @@ public class FragmentForecast extends Fragment implements IListeners
 		
 		private void updateView()
 		{
-			((TextView) this.view.findViewById(R.id.textViewLocation)).setText(location.City + " " + location.State);
+			((TextView) this.view.findViewById(R.id.textViewLocation)).setText(location.City + ", " + location.State);
             ((TextView) this.view.findViewById(R.id.textViewTemp)).setText(forecast.Temp + "\u2109");
             ((TextView) this.view.findViewById(R.id.textViewFeelsLikeTemp)).setText(forecast.FeelsLike + "\u2109");
             ((TextView) this.view.findViewById(R.id.textViewHumidity)).setText(forecast.Humid + "%");

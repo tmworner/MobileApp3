@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -169,8 +170,8 @@ public class Forecast implements Parcelable
                 			this.forecast.Humid = fc.getString("humidity");
                 			this.forecast.PrecipChance = fc.getString("chancePrecip");
                 			this.forecast.Time = fc.getString("dateTime");
-                			//Date s = new SimpleDateFormat("HH:mm", Locale.US).parse(this.forecast.Time.substring(0, 9));
-                			//this.forecast.Time = s.toString();
+                			Date date = new Date(Long.valueOf(this.forecast.Time));                			
+                			this.forecast.Time = date.toString();
                 			this.conditions = fc.getString("icon");
                 		}
                 	}

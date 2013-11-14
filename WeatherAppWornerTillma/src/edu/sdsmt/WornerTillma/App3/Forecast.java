@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -170,8 +171,11 @@ public class Forecast implements Parcelable
                 			this.forecast.Humid = fc.getString("humidity");
                 			this.forecast.PrecipChance = fc.getString("chancePrecip");
                 			this.forecast.Time = fc.getString("dateTime");
-                			Date date = new Date(Long.valueOf(this.forecast.Time));                			
-                			this.forecast.Time = date.toString();
+                			Date date = new Date(Long.valueOf(this.forecast.Time));
+                			//this.forecast.Time = date.toString();
+                			SimpleDateFormat format = new SimpleDateFormat("hh:mm a", Locale.US);
+                			format.setTimeZone(TimeZone.getTimeZone("gmt"));
+                			this.forecast.Time = format.format(date);
                 			this.conditions = fc.getString("icon");
                 		}
                 	}

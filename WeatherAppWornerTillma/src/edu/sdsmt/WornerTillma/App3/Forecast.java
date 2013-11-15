@@ -6,9 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -26,7 +24,6 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 public class Forecast implements Parcelable
 {
@@ -37,13 +34,15 @@ public class Forecast implements Parcelable
     public String PrecipChance;
     public String Time;
 	
-    private static final String TAG = "App3_Forecast";
+    //private static final String TAG = "App3_Forecast";
     
     // http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
     // NOTE:  See example JSON in doc folder.
     private String URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 
                           "&ht=t&ht=i&ht=cp&ht=fl&ht=h" + 
                           "&api_key=q3wj56tqghv7ybd8dy6gg4e7";
+    
+    private LoadForecast loadForecast;
     
     // http://developer.weatherbug.com/docs/read/List_of_Icons
     private String ImageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
@@ -55,8 +54,15 @@ public class Forecast implements Parcelable
     
     public void GetForecast(String zip, IListeners listener)
     {
-    	LoadForecast loadForecast = new LoadForecast(this, listener);
-    	loadForecast.execute(this.URL, this.ImageURL, zip);
+    	this.loadForecast = new LoadForecast(listener);
+    	this.loadForecast.execute(this.URL, this.ImageURL, zip);
+    }
+    
+    public boolean CancelGetForecast()
+    {
+    	if(this.loadForecast != null && this.loadForecast.getStatus() != AsyncTask.Status.FINISHED)
+    		return this.loadForecast.cancel(true);
+		return false;
     }
 
     private Forecast(Parcel parcel)
@@ -103,16 +109,16 @@ public class Forecast implements Parcelable
 
     public class LoadForecast extends AsyncTask<String, Void, Forecast>
     {
-		private Forecast forecast;
+		//private Context context;
         private IListeners listener;
 
         private int bitmapSampleSize = -1;
         private String conditions;
 
-        public LoadForecast(Forecast forecast, IListeners listener)
+        public LoadForecast(IListeners listener)
         {
-            this.forecast = forecast;
             this.listener = listener;
+            //this.context = context;
         }
 
         // params[0] = URL
@@ -120,6 +126,8 @@ public class Forecast implements Parcelable
         // params[2] = Zip
         protected Forecast doInBackground(String... params)
         {
+        	Forecast forecast = new Forecast();
+        	
             try
             {
             	StringBuilder stringBuilder = new StringBuilder();
@@ -139,24 +147,26 @@ public class Forecast implements Parcelable
         				stringBuilder.append(line);
         			}
         			
-        			this.ReadJSON(stringBuilder.toString());
-        			this.readIconBitmap(this.conditions, this.bitmapSampleSize);
+        			this.ReadJSON(forecast, stringBuilder.toString());
+        			this.readIconBitmap(forecast, this.conditions, this.bitmapSampleSize);
         		}
 
             }
-                catch (IllegalStateException e)
-                {
-                    Log.e(TAG, e.toString() + params[0]);
-                }
-                catch (Exception e)
-                {
-                    Log.e(TAG, e.toString());
-                }
+            catch (IllegalStateException e)
+            {
+            	Receiver.SetMessage(e.toString());
+        		//Log.e(TAG, e.toString() + params[0]);
+            }
+            catch (Exception e)
+            {
+            	Receiver.SetMessage(e.toString());
+        		//Log.e(TAG, e.toString());
+            }
 
-                return forecast;
+            return forecast;
         }
         
-        private void ReadJSON(String json)
+        private void ReadJSON(Forecast forecast, String json)
         {
         	try
         	{
@@ -166,27 +176,23 @@ public class Forecast implements Parcelable
         		{
         			JSONObject fc = jToken.getJSONArray("forecastHourlyList").getJSONObject(0);
         			
-        			this.forecast.Temp = fc.getString("temperature");
-        			this.forecast.FeelsLike = fc.getString("feelsLike");
-        			this.forecast.Humid = fc.getString("humidity");
-        			this.forecast.PrecipChance = fc.getString("chancePrecip");
-        			this.forecast.Time = fc.getString("dateTime");
-        			Date date = new Date(Long.valueOf(this.forecast.Time));
-        			//this.forecast.Time = date.toString();
+        			forecast.Temp = fc.getString("temperature");
+        			forecast.FeelsLike = fc.getString("feelsLike");
+        			forecast.Humid = fc.getString("humidity");
+        			forecast.PrecipChance = fc.getString("chancePrecip");
+        			forecast.Time = fc.getString("dateTime");
+        			Date date = new Date(Long.valueOf(forecast.Time));
         			SimpleDateFormat format = new SimpleDateFormat("hh:mm a", Locale.US);
         			format.setTimeZone(TimeZone.getTimeZone("gmt"));
-        			this.forecast.Time = format.format(date);
+        			forecast.Time = format.format(date);
         			this.conditions = fc.getString("icon");
         		}
         	}
         	catch(JSONException e)
         	{
-        		Log.e(Forecast.TAG, e.toString());
+        		Receiver.SetMessage(e.toString());
+        		//Log.e(Forecast.TAG, e.toString());
         	}
-        	/*catch(ParseException e)
-        	{
-        		Log.e(Forecast.TAG, e.toString());
-        	}*/
         }
 
         protected void onPostExecute(Forecast forecast)
@@ -194,7 +200,7 @@ public class Forecast implements Parcelable
             this.listener.onForecastLoaded(forecast);
         }
 
-        private void readIconBitmap(String conditionString, int bitmapSampleSize)
+        private void readIconBitmap(Forecast forecast, String conditionString, int bitmapSampleSize)
         {
             try
             {
@@ -206,19 +212,22 @@ public class Forecast implements Parcelable
                     options.inSampleSize = bitmapSampleSize;
                 }
 
-                this.forecast.Image = BitmapFactory.decodeStream(weatherURL.openStream(), null, options);
+                forecast.Image = BitmapFactory.decodeStream(weatherURL.openStream(), null, options);
             }
             catch (MalformedURLException e)
             {
-                Log.e(TAG, e.toString());
+            	Receiver.SetMessage(e.toString());
+        		//Log.e(TAG, e.toString());
             }
             catch (IOException e)
             {
-                Log.e(TAG, e.toString());
+            	Receiver.SetMessage(e.toString());
+        		//Log.e(TAG, e.toString());
             }
             catch (Exception e)
             {
-                Log.e(TAG, e.toString());
+            	Receiver.SetMessage(e.toString());
+        		//Log.e(TAG, e.toString());
             }
         }
     }

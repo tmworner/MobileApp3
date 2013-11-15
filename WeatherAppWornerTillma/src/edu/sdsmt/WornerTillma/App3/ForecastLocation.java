@@ -18,7 +18,6 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 public class ForecastLocation implements Parcelable
 {
@@ -27,13 +26,14 @@ public class ForecastLocation implements Parcelable
     public String State;
     public String Country;
     
-
-    private static final String TAG = "App3_ForecastLocation";
+    //private static final String TAG = "App3_ForecastLocation";
     
     // http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
     // NOTE:  See example JSON in doc folder.
     private String URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
                                  "&api_key=u6vtegq4c7p72xk5cdwpcwtw";
+                                 
+     private LoadForecastLocation loadLocation;
     
 
     public ForecastLocation()
@@ -46,8 +46,15 @@ public class ForecastLocation implements Parcelable
     
     public void GetLocation(String zip, IListeners listener)
     {
-    	LoadForecastLocation loadLocation = new LoadForecastLocation(this, listener);
-    	loadLocation.execute(this.URL, zip);
+    	this.loadLocation = new LoadForecastLocation(listener);
+    	this.loadLocation.execute(this.URL, zip);
+    }
+    
+    public boolean CancelGetLocation()
+    {
+    	if(this.loadLocation != null && this.loadLocation.getStatus() != AsyncTask.Status.FINISHED)
+    		return this.loadLocation.cancel(true);
+		return false;
     }
     
     private ForecastLocation(Parcel parcel)
@@ -90,19 +97,21 @@ public class ForecastLocation implements Parcelable
     
     public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
     {
-        private IListeners _listener;
-        private ForecastLocation location;
+        private IListeners listener;
+        //private Context context;
 
-        public LoadForecastLocation(ForecastLocation location, IListeners listener)
+        public LoadForecastLocation(IListeners listener)
         {
-            this.location = location;
-            _listener = listener;
+            this.listener = listener;
+            //this.context = context;
         }
 
         // params[0] = URL
         // params[2] = Zip
         protected ForecastLocation doInBackground(String... params)
         {
+        	ForecastLocation location = new ForecastLocation();
+        
             try
             {
             	StringBuilder stringBuilder = new StringBuilder();
@@ -122,27 +131,30 @@ public class ForecastLocation implements Parcelable
         				stringBuilder.append(line);
         			}
         			
-        			this.ReadJSON(stringBuilder.toString());
+        			this.ReadJSON(location, stringBuilder.toString());
         		}
 
             }
         	catch(ClientProtocolException e)
         	{
-        		Log.e(ForecastLocation.TAG, e.getMessage());
+        		Receiver.SetMessage(e.toString());
+        		// Log.e(ForecastLocation.TAG, e.getMessage());
         	}
         	catch(IOException e)
         	{
-        		Log.e(ForecastLocation.TAG, e.getMessage());
+        		Receiver.SetMessage(e.toString());
+        		// Log.e(ForecastLocation.TAG, e.getMessage());
         	}
             catch (Exception e)
             {
-                Log.e(TAG, e.toString());
+            	Receiver.SetMessage(e.toString());
+        		// Log.e(TAG, e.toString());
             }
 
             return location;
         }
         
-        private void ReadJSON(String json)
+        private void ReadJSON(ForecastLocation location, String json)
         {
         	try
         	{
@@ -152,21 +164,22 @@ public class ForecastLocation implements Parcelable
         		{
         			JSONObject loc = jToken.getJSONObject("location");
         			
-        			this.location.City = loc.getString("city");
-        			this.location.State = loc.getString("state");
-        			this.location.Country = loc.getString("country");
-        			this.location.ZipCode = loc.getString("zipCode");
+        			location.City = loc.getString("city");
+        			location.State = loc.getString("state");
+        			location.Country = loc.getString("country");
+        			location.ZipCode = loc.getString("zipCode");
         		}
         	}
         	catch(JSONException e)
         	{
-        		Log.e(ForecastLocation.TAG, e.getMessage());
+        		Receiver.SetMessage(e.toString());
+        		//Log.e(ForecastLocation.TAG, e.getMessage());
         	}
         }
 
         protected void onPostExecute(ForecastLocation location)
         {
-            _listener.onLocationLoaded(location);
+            this.listener.onLocationLoaded(location);
         }
     }
 }

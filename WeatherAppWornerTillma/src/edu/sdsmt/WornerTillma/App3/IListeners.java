@@ -5,6 +5,6 @@ import edu.sdsmt.WornerTillma.App3.ForecastLocation;
 
 public interface IListeners
 {
-        public void onLocationLoaded(ForecastLocation forecastLocation);
-        public void onForecastLoaded(Forecast forecast);
+    public void onLocationLoaded(ForecastLocation forecastLocation);
+    public void onForecastLoaded(Forecast forecast);
 }

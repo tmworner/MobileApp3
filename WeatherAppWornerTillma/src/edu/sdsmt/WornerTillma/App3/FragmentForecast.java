@@ -7,54 +7,86 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+/**
+ * The fragment that displays the forecast.
+ * 
+ * <p>
+ * <div style="font-weight:bold">
+ * Description:
+ * </div>
+ * 		<div style="padding-left:3em">
+ * 		This class controls the display of the forecast. It creates the fragment, inflates the
+ * 		view, and then it updates the view with the proper information.
+ * 		</div>
+ * </p>
+ * 
+ * @since November 10, 2013
+ * @author James Tillma and Teresa Worner
+ */
 public class FragmentForecast extends Fragment
 {
-        private ForecastLocation location;
-        private Forecast forecast;
-        private View view;
+    private ForecastLocation location;//class's forecastLocation object
+    private Forecast forecast;//class's forecast object
+    private View view;//class's view object
 
-        @Override
-        public void onCreate(Bundle argumentsBundle)
+	/**
+	 * The onCreate override for the fragment.
+	 * @param argumentsBundle The bundle to use to create the fragment.
+	 */
+    @Override
+    public void onCreate(Bundle argumentsBundle)
+    {
+        super.onCreate(argumentsBundle);
+        //get the parcel's location and forecast objects
+        location = this.getArguments().getParcelable(Common.LOCATION_KEY);
+        forecast = this.getArguments().getParcelable(Common.FORECAST_KEY);
+    }
+
+	/**
+	 * Inflates the view and displays the information received from WeatehrBug (if any).
+	 * @param inflater Inflater used to create and show the fraeement
+	 * @param savedInstanceState Contains any saved state information from the last runtime.
+	 */
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+    	//inflate the fragment and set the class's value
+        View rootView = inflater.inflate(R.layout.fragment_forecast, null);
+        this.view = rootView;
+        //create an integer to represent visibility of the spinner on the screen
+        int visibility;
+        
+        //if the zip code is invalid or the temperature is invalid, the the spinner to be visibly
+        if(this.location.ZipCode == null || this.forecast.Temp == null)
         {
-                super.onCreate(argumentsBundle);
-                
-                location = this.getArguments().getParcelable(Common.LOCATION_KEY);
-                forecast = this.getArguments().getParcelable(Common.FORECAST_KEY);
+        	visibility = View.VISIBLE;
         }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        //otherwise, set it to be invisible
+        else
         {
-                View rootView = inflater.inflate(R.layout.fragment_forecast, null);
-                this.view = rootView;
-                
-                int visibility;
-                
-                if(this.location.ZipCode == null || this.forecast.Temp == null)
-                {
-                	visibility = View.VISIBLE;
-                }
-                else
-                {
-                	visibility = View.INVISIBLE;
-                }
-                
-                this.updateView(visibility);
-
-                return rootView;
+        	visibility = View.INVISIBLE;
         }
-		
-		private void updateView(int visibility)
-		{
-			this.view.findViewById(R.id.layoutProgress).setVisibility(visibility);
-			
-			((TextView) this.view.findViewById(R.id.textViewLocation)).setText(location.City + ", " + location.State);
-            ((TextView) this.view.findViewById(R.id.textViewTemp)).setText(forecast.Temp + "\u2109");
-            ((TextView) this.view.findViewById(R.id.textViewFeelsLikeTemp)).setText(forecast.FeelsLike + "\u2109");
-            ((TextView) this.view.findViewById(R.id.textViewHumidity)).setText(forecast.Humid + "%");
-            ((TextView) this.view.findViewById(R.id.textViewChanceOfPrecip)).setText(forecast.PrecipChance + "%");
-            ((TextView) this.view.findViewById(R.id.textViewAsOfTime)).setText(forecast.Time);
-            ((ImageView) this.view.findViewById(R.id.imageForecast)).setImageBitmap(forecast.Image);
-		}
+        //update the fragment's display
+        this.updateView(visibility);
+        //return the fragment's rootView
+        return rootView;
+    }
+	
+	/**
+	 * Updates the information in the fragment.
+	 * @param visibiility The value to set the visibility of the loading circle to.
+	 */
+	private void updateView(int visibility)
+	{
+		//set the spinner's visibility
+		this.view.findViewById(R.id.layoutProgress).setVisibility(visibility);
+		//set teh text for all of the text views in the fragment
+		((TextView) this.view.findViewById(R.id.textViewLocation)).setText(location.City + ", " + location.State);
+        ((TextView) this.view.findViewById(R.id.textViewTemp)).setText(forecast.Temp + "\u2109");
+        ((TextView) this.view.findViewById(R.id.textViewFeelsLikeTemp)).setText(forecast.FeelsLike + "\u2109");
+        ((TextView) this.view.findViewById(R.id.textViewHumidity)).setText(forecast.Humid + "%");
+        ((TextView) this.view.findViewById(R.id.textViewChanceOfPrecip)).setText(forecast.PrecipChance + "%");
+        ((TextView) this.view.findViewById(R.id.textViewAsOfTime)).setText(forecast.Time);
+        ((ImageView) this.view.findViewById(R.id.imageForecast)).setImageBitmap(forecast.Image);
+	}
 }

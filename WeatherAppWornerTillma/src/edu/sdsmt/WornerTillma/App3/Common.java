@@ -18,12 +18,12 @@ package edu.sdsmt.WornerTillma.App3;
  */
 public class Common 
 {
-	// key for location values in parcelable
+	/** key for location values in parcelable */
 	public static final String LOCATION_KEY = "key_location";
 	
-	// key for forecast values in parcelable
+	/** key for forecast values in parcelable */
     public static final String FORECAST_KEY = "key_forecast";
     
-    // path for the intent broadcast that will trigger the Toast
+    /** path for the intent broadcast that will trigger the Toast */
 	public static final String ExceptionIntent = "edu.sdsmt.WornerTillma.App3.intent.Exception";
 }

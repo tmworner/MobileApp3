@@ -37,10 +37,14 @@ import android.os.Parcelable;
  */
 public class ForecastLocation implements Parcelable
 {
-	public String ZipCode; // the class's value for the zip code
-    public String City; // the class's value for the city
-    public String State; // the class's value for the state
-    public String Country; // the classes value for the country
+	/** The zip code for which to acquire a forecast */
+	public String ZipCode;
+	/** The city associated with the zip code for which to acquire a forecast */
+    public String City;
+	/** The state associated with the zip code for which to acquire a forecast */
+    public String State;
+	/** The country associated with the zip code for which to acquire a forecast */
+    public String Country;
     
     // the url to get the location information
     private String URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 

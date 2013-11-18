@@ -42,14 +42,19 @@ import android.os.Parcelable;
  * @author James Tillma and Teresa Worner
  */
 public class Forecast implements Parcelable
-{
-	// all of these are found through JSON
-	public Bitmap Image; // class's image object
-    public String Temp; // class string to hold the temperature
-    public String FeelsLike; // class string to hold the relative temperature
-    public String Humid; // class string to hold the humidity
-    public String PrecipChance; // class string to hold the chance of precipitation
-    public String Time; // class string to hold the time
+{	
+	/** The icon associated with the forecast */
+	public Bitmap Image;
+	/** The temperature given in the forecast */
+    public String Temp;
+	/** What the temperature given in the forecast feels like */
+    public String FeelsLike;
+	/** The humidity levels given in the forecast */
+    public String Humid;
+	/** The chance of precipitation given in the forecast */
+    public String PrecipChance;
+	/** The time the forecast is for */
+    public String Time;
 	
     // string that holds the URL to get the forecast information from WeatherBug
     private String URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 

@@ -13,8 +13,8 @@ import android.widget.Toast;
  * Description:
  * </div>
  * 		<div style="padding-left:3em">
- * 		This class handels the showing of toast. In this app, it is used when an exception is
- * 		caught. The message used is specific to the exception that was caught.
+ * 		This class handles the showing of toast. In this app, it is used when an exception is
+ * 		caught. The message used is specific to the exception.
  * 		</div>
  * </p>
  * 
@@ -23,8 +23,8 @@ import android.widget.Toast;
  */
 public class Receiver extends BroadcastReceiver
 {
-	private static String message; //holds the message for the toast to display
-	private static Toast toast = null; //the Toast object to show
+	private static String message; // holds the message for the toast to display
+	private static Toast toast = null; // the Toast object to show
 	
 	/**
 	 * Class's constructor.
@@ -39,7 +39,7 @@ public class Receiver extends BroadcastReceiver
 	 */
 	public static void SetMessage(String message)
 	{
-		Receiver.message = message; //set the class's message
+		Receiver.message = message; // set the class's message
 	}
 	
 	/**
@@ -51,13 +51,14 @@ public class Receiver extends BroadcastReceiver
 	@Override
 	public void onReceive( Context context, Intent intent)
 	{
-		//if toast is being or has been displayed, cancel it and reset the object
+		// if toast is being displayed or has been displayed, cancel it and reset the object
 		if(toast != null)
 		{
 			toast.cancel();
 			toast = null;
 		}
-		//if the broadcast is received, show toast
+		
+		// if the broadcast is received, show toast
 		if(intent.getAction() == Common.ExceptionIntent)
 		{
 			toast = Toast.makeText(context, Receiver.message, Toast.LENGTH_LONG);

@@ -25,9 +25,9 @@ import android.widget.TextView;
  */
 public class FragmentForecast extends Fragment
 {
-    private ForecastLocation location;//class's forecastLocation object
-    private Forecast forecast;//class's forecast object
-    private View view;//class's view object
+    private ForecastLocation location; // class's forecastLocation object
+    private Forecast forecast; // class's forecast object
+    private View view; // class's view object
 
 	/**
 	 * The onCreate override for the fragment.
@@ -37,38 +37,42 @@ public class FragmentForecast extends Fragment
     public void onCreate(Bundle argumentsBundle)
     {
         super.onCreate(argumentsBundle);
-        //get the parcel's location and forecast objects
+        
+        // get the location and forecast objects that have been passed in to the fragments as arguments
         location = this.getArguments().getParcelable(Common.LOCATION_KEY);
         forecast = this.getArguments().getParcelable(Common.FORECAST_KEY);
     }
 
 	/**
-	 * Inflates the view and displays the information received from WeatehrBug (if any).
-	 * @param inflater Inflater used to create and show the fraeement
+	 * Inflates the view and displays the information received from WeatherBug (if any).
+	 * @param inflater Inflater used to create and show the fragment
 	 * @param savedInstanceState Contains any saved state information from the last runtime.
 	 */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-    	//inflate the fragment and set the class's value
+    	// inflate the fragment and set the class's value
         View rootView = inflater.inflate(R.layout.fragment_forecast, null);
         this.view = rootView;
-        //create an integer to represent visibility of the spinner on the screen
+        
+        // create an integer to represent visibility of the spinner on the screen
         int visibility;
         
-        //if the zip code is invalid or the temperature is invalid, the the spinner to be visibly
+        // if the zip code is invalid or the temperature is invalid, set the spinner to be visible
         if(this.location.ZipCode == null || this.forecast.Temp == null)
         {
         	visibility = View.VISIBLE;
         }
-        //otherwise, set it to be invisible
+        // otherwise, set it to be invisible
         else
         {
         	visibility = View.INVISIBLE;
         }
-        //update the fragment's display
+        
+        // update the fragment's display
         this.updateView(visibility);
-        //return the fragment's rootView
+        
+        // return the fragment's rootView
         return rootView;
     }
 	
@@ -78,9 +82,10 @@ public class FragmentForecast extends Fragment
 	 */
 	private void updateView(int visibility)
 	{
-		//set the spinner's visibility
+		// set the spinner's visibility
 		this.view.findViewById(R.id.layoutProgress).setVisibility(visibility);
-		//set teh text for all of the text views in the fragment
+		
+		// set the text for all of the text views in the fragment
 		((TextView) this.view.findViewById(R.id.textViewLocation)).setText(location.City + ", " + location.State);
         ((TextView) this.view.findViewById(R.id.textViewTemp)).setText(forecast.Temp + "\u2109");
         ((TextView) this.view.findViewById(R.id.textViewFeelsLikeTemp)).setText(forecast.FeelsLike + "\u2109");

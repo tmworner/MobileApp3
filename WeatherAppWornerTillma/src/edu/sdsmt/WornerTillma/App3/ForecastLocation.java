@@ -26,7 +26,7 @@ import android.os.Parcelable;
  * Description:
  * </div>
  * 		<div style="padding-left:3em">
- * 		This class has methods for getting the location information, canceling the
+ * 		This class has methods for getting the location information, canceling the call to
  * 		get location, writing to the parcel, and creating the parcel. All of these
  * 		for the location information (nothing involving the forecast itself).
  * 		</div>
@@ -37,15 +37,16 @@ import android.os.Parcelable;
  */
 public class ForecastLocation implements Parcelable
 {
-	public String ZipCode; //the class's value for the zip code
-    public String City; //the class's value for the city
-    public String State; //the class's value for the state
-    public String Country; //the classes value for the country
+	public String ZipCode; // the class's value for the zip code
+    public String City; // the class's value for the city
+    public String State; // the class's value for the state
+    public String Country; // the classes value for the country
     
-    //the url to get the location information at
+    // the url to get the location information
     private String URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
                                  "&api_key=u6vtegq4c7p72xk5cdwpcwtw";
-          
+    
+    // the async task to get the location
     private LoadForecastLocation loadLocation;
     
 	/**
@@ -53,7 +54,7 @@ public class ForecastLocation implements Parcelable
 	 */
     public ForecastLocation()
     {
-    	//set the values to be null when nothing is given to the constructor
+    	// set the values to be null when nothing is given to the constructor
 		this.ZipCode = null;
         this.City = null;
         this.State = null;
@@ -63,11 +64,11 @@ public class ForecastLocation implements Parcelable
 	/**
 	 * A different version of the constructor. This passes in a parcel that contains
 	 * the information that has been received from WeatherBug requests.
-	 * @param parcel The parcel to get the information from to be used in this class.
+	 * @param parcel The parcel to get the information to be used in this class.
 	 */
     private ForecastLocation(Parcel parcel)
     {
-    	//set the location information to be the information found in the parcel
+    	// set the location information to be the information found in the parcel
         this.ZipCode = parcel.readParcelable(Bitmap.class.getClassLoader());
         this.City = parcel.readString();
         this.State = parcel.readString();
@@ -81,7 +82,7 @@ public class ForecastLocation implements Parcelable
 	 */
     public void GetLocation(String zip, IListeners listener)
     {
-    	//create a LoadForecastLocation object and gets the location information
+    	// create a LoadForecastLocation object and get the location information
     	this.loadLocation = new LoadForecastLocation(listener);
     	this.loadLocation.execute(this.URL, zip);
     }
@@ -91,7 +92,7 @@ public class ForecastLocation implements Parcelable
 	 */
     public boolean CancelGetLocation()
     {
-    	//if there is a valid location instance that hasn't finished its async task, then cancel it
+    	// if there is a valid location instance that hasn't finished its async task, then cancel it
     	if(this.loadLocation != null && this.loadLocation.getStatus() != AsyncTask.Status.FINISHED)
     		return this.loadLocation.cancel(true);
 		return false;
@@ -103,16 +104,18 @@ public class ForecastLocation implements Parcelable
     @Override
     public int describeContents()
     {
-        return 0;//return 0 because it has to return something, but this app doesn't use it
+        return 0; // return 0 because it has to return something, but this app doesn't use it
     }
 
 	/**
-	 * dest The destination parcel for the information received by the class.
+	 * Write the location data to a parcel
+	 * @param dest The destination parcel for the information received by the class.
+	 * @param flags
 	 */
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-    	//set the destination parcel values
+    	// set the destination parcel values
         dest.writeString(this.ZipCode);
         dest.writeString(this.City);
         dest.writeString(this.State);
@@ -126,13 +129,13 @@ public class ForecastLocation implements Parcelable
     {
     	/**
     	 * Creates and returns ForecastLocation object based on a parcel.
-    	 * @param The parcel to use to create the object
+    	 * @param pc The parcel to use to create the object
     	 * @return The created object
     	 */
         @Override
         public ForecastLocation createFromParcel(Parcel pc)
         {
-            return new ForecastLocation(pc);//return a new ForecastLoaciton object
+            return new ForecastLocation(pc); // return a new ForecastLoaciton object
         }
         
     	/**
@@ -143,7 +146,7 @@ public class ForecastLocation implements Parcelable
         @Override
         public ForecastLocation[] newArray(int size)
         {
-            return new ForecastLocation[size];//return a new array of ForecastLocation objects
+            return new ForecastLocation[size]; // return a new array of ForecastLocation objects
         }
     };
     
@@ -155,9 +158,9 @@ public class ForecastLocation implements Parcelable
      * Description:
      * </div>
      * 		<div style="padding-left:3em">
-     * 		Sets the city, state country, and zipCode of the location. Not all of
+     * 		Sets the city, state, country, and zipCode of the location. Not all of
      * 		this is used in the app. It has methods for getting the forecast location
-     * 		information, reading the JSON, and then a method for calling the listerner's
+     * 		information, reading the JSON, and then a method for calling the listener's
      * 		onLocationLoaded method.
      * 		</div>
      * </p>
@@ -167,8 +170,7 @@ public class ForecastLocation implements Parcelable
      */
     public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
     {
-        private IListeners listener;//the class's listener object
-        //private Context context;
+        private IListeners listener; // the listener that holds the onLocationLoaded method
 
     	/**
     	 * Constructor for the class, gives the class's listener a value
@@ -176,66 +178,66 @@ public class ForecastLocation implements Parcelable
     	 */
         public LoadForecastLocation(IListeners listener)
         {
-            this.listener = listener;//set the class's listener object
-            //this.context = context;
+            this.listener = listener; // set the class's listener object
         }
 
     	/**
-    	 * Gets the forecast location information from WeaterhBug (in a try-catch block). If
+    	 * Gets the forecast location information from WeatherBug (in a try-catch block). If
     	 * any exception is triggered, an intent is sent from here.
     	 * @param params The array of parameters used in the HttpGet function call
     	 * @return location The location object.
     	 */
-
         protected ForecastLocation doInBackground(String... params)
         {
-        	//create a new instance of ForecastLocation
+        	// create a new instance of ForecastLocation
         	ForecastLocation location = new ForecastLocation();
         
             try
-            { //create a string builder and HTTP client
+            { 
+            	// create a string builder and HTTP client
             	StringBuilder stringBuilder = new StringBuilder();
             	HttpClient client = new DefaultHttpClient();
             	HttpResponse response;
-            	//get information from the URL
+            	
+            	// get information from the URL
         		response = client.execute(new HttpGet(String.format(params[0], params[1])));
+        		
         		if(response.getStatusLine().getStatusCode() == 200)
         		{
         			HttpEntity entity = response.getEntity();
         			InputStream content = entity.getContent();
         			BufferedReader reader = new BufferedReader(new InputStreamReader(content));
         			
+        			// Get the data
         			String line;
         			while((line = reader.readLine()) != null)
         			{
         				stringBuilder.append(line);
         			}
         			
+        			// Read the data
         			this.ReadJSON(location, stringBuilder.toString());
         		}
 
             }
-            //exceptions are used to show toast
+            // exceptions are used to show toast
         	catch(ClientProtocolException e)
         	{
-        		//if a client protocol exception was caught, set the receiver's message
+        		// if a client protocol exception was caught, set the receiver's message
         		Receiver.SetMessage("The wireless communication has failed\n"+e.toString());
-        		// Log.e(ForecastLocation.TAG, e.getMessage());
         	}
         	catch(IOException e)
         	{
-        		//if an IO exception was caught, set the receiver's message
+        		// if an IO exception was caught, set the receiver's message
         		Receiver.SetMessage(e.toString());
-        		// Log.e(ForecastLocation.TAG, e.getMessage());
         	}
             catch (Exception e)
             {
-            	//if a general exception was caught, set the receiver's message
+            	// if a general exception was caught, set the receiver's message
             	Receiver.SetMessage(e.toString());
-        		// Log.e(TAG, e.toString());
             }
 
-            //return the location object with its values (or potentially empty)
+            // return the location object with its values (or potentially empty)
             return location;
         }
         
@@ -248,12 +250,13 @@ public class ForecastLocation implements Parcelable
         {
         	try
         	{
-        		//create a new JSON object
+        		// create a new JSON object
         		JSONObject jToken = new JSONObject(json);
-        		//if it has a location
+        		
+        		// if it has a location
         		if(jToken.has("location"))
         		{
-        			//get the location and set the class's values
+        			// get the location and set the class's values
         			JSONObject loc = jToken.getJSONObject("location");
         			
         			location.City = loc.getString("city");
@@ -264,19 +267,18 @@ public class ForecastLocation implements Parcelable
         	}
         	catch(JSONException e)
         	{
-        		//if a JSON excption was caught, set the receiver's message
+        		// if a JSON excption was caught, set the receiver's message
         		Receiver.SetMessage(e.toString());
-        		//Log.e(ForecastLocation.TAG, e.getMessage());
         	}
         }
 
     	/**
     	 * Calls the IListener's onLocationLoaded method
-    	 * @param lcoation The location object
+    	 * @param location The location object
     	 */
         protected void onPostExecute(ForecastLocation location)
         {
-        	//call the listner's onLocationLoaded method passing in the location information
+        	// call the listner's onLocationLoaded method passing in the location information
             this.listener.onLocationLoaded(location);
         }
     }

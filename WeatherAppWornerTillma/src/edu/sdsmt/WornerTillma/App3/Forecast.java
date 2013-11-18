@@ -43,19 +43,20 @@ import android.os.Parcelable;
  */
 public class Forecast implements Parcelable
 {
-	//all of these are found through JSON
-	public Bitmap Image;//class's image object
-    public String Temp;//class string to hold the temperature
-    public String FeelsLike;//class string to hold the relative temperature
-    public String Humid;//class string to hold the humidity
-    public String PrecipChance;//class string to hold the chance of precipitation
-    public String Time;//class string to hold the time
+	// all of these are found through JSON
+	public Bitmap Image; // class's image object
+    public String Temp; // class string to hold the temperature
+    public String FeelsLike; // class string to hold the relative temperature
+    public String Humid; // class string to hold the humidity
+    public String PrecipChance; // class string to hold the chance of precipitation
+    public String Time; // class string to hold the time
 	
-    //string that holds the URL to get the forecast information from
+    // string that holds the URL to get the forecast information from WeatherBug
     private String URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 
                           "&ht=t&ht=i&ht=cp&ht=fl&ht=h" + 
                           "&api_key=u6vtegq4c7p72xk5cdwpcwtw";
-    //the LoadForecast object
+                          
+    // the LoadForecast object
     private LoadForecast loadForecast;
     
     // http://developer.weatherbug.com/docs/read/List_of_Icons
@@ -66,11 +67,13 @@ public class Forecast implements Parcelable
 	 */
     public Forecast()
     {
-        this.Image = null;//set the image to be null
+        this.Image = null; // set the image to be null
     }
     
 	/**
-	 * 
+	 * Gets the forecast information
+	 * @param zip The zipcode used as the location
+	 * @param listener The IListener object.
 	 */
     public void GetForecast(String zip, IListeners listener)
     {
@@ -80,23 +83,23 @@ public class Forecast implements Parcelable
     }
     
 	/**
-	 * 
+	 * Cancels the request to get the forecast (method used during lifecycle events).
 	 */
     public boolean CancelGetForecast()
     {
-    	//if LoadForecast object isn't null and the async task hasn't finished
+    	// if LoadForecast object isn't null and the async task hasn't finished, cancel the task
     	if(this.loadForecast != null && this.loadForecast.getStatus() != AsyncTask.Status.FINISHED)
-    		return this.loadForecast.cancel(true);//cancel it
+    		return this.loadForecast.cancel(true);
 		return false;
     }
 
 	/**
-	 * Constructor for the class. This sets values based on the passed in parcel.
+	 * Constructor for the class. This sets values based on those passed in parcel.
 	 * @param parcel Contains the values to set class values to.
 	 */
     private Forecast(Parcel parcel)
     {
-    	//set the class's objecst and strings based on values found in the parcel
+    	// get the data from the parcel
         this.Image = parcel.readParcelable(Bitmap.class.getClassLoader());
         this.Temp = parcel.readString();
         this.FeelsLike = parcel.readString();
@@ -111,17 +114,18 @@ public class Forecast implements Parcelable
     @Override
     public int describeContents()
     {
-        return 0;//returns 0, not very useful but required
+        return 0; // returns 0, not very useful but required
     }
 
 	/**
 	 * Writes class values to a parcel
 	 * @param dest The destination parcel for the information.
+	 * @param flags
 	 */
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-    	//write the class values toe the parcel
+    	// write the class values toe the parcel
         dest.writeParcelable(Image, 0);
         dest.writeString(this.Temp);
         dest.writeString(this.FeelsLike);
@@ -142,7 +146,7 @@ public class Forecast implements Parcelable
         @Override
         public Forecast createFromParcel(Parcel pc)
         {
-            return new Forecast(pc);//return a new forecast object
+            return new Forecast(pc); // return a new forecast object
         }
         
     	/**
@@ -152,7 +156,7 @@ public class Forecast implements Parcelable
         @Override
         public Forecast[] newArray(int size)
         {
-            return new Forecast[size];//return a new array of forecast objects
+            return new Forecast[size]; // return a new array of forecast objects
         }
     };
 
@@ -175,11 +179,10 @@ public class Forecast implements Parcelable
      */
     public class LoadForecast extends AsyncTask<String, Void, Forecast>
     {
-		//private Context context;
-        private IListeners listener;//inner class listeners
+        private IListeners listener; // the listener that holds the onForecastLoaded method
 
-        private int bitmapSampleSize = -1;//set bitmap size
-        private String conditions;//create string conditions
+        private int bitmapSampleSize = -1; // set bitmap size
+        private String conditions; // create string conditions
 
     	/**
     	 * Sets the class's listener value.
@@ -187,8 +190,7 @@ public class Forecast implements Parcelable
     	 */
         public LoadForecast(IListeners listener)
         {
-            this.listener = listener; //set the class's listener object
-            //this.context = context;
+            this.listener = listener; // set the class's listener object
         }
 
     	/**
@@ -204,11 +206,12 @@ public class Forecast implements Parcelable
         	
             try
             {
-            	//create a string object and HttpClient
+            	// create a string object and HttpClient
             	StringBuilder stringBuilder = new StringBuilder();
             	HttpClient client = new DefaultHttpClient();
             	HttpResponse response;
-            	//get information from the URL
+            	
+            	// get information from the URL
             	response = client.execute(new HttpGet(String.format(params[0], params[2])));
         		if(response.getStatusLine().getStatusCode() == 200)
         		{
@@ -216,12 +219,14 @@ public class Forecast implements Parcelable
         			InputStream content = entity.getContent();
         			BufferedReader reader = new BufferedReader(new InputStreamReader(content));
         			
+        			// Get the data
         			String line;
         			while((line = reader.readLine()) != null)
         			{
         				stringBuilder.append(line);
         			}
         			
+        			// Read the data
         			this.ReadJSON(forecast, stringBuilder.toString());
         			this.readIconBitmap(forecast, this.conditions, this.bitmapSampleSize);
         		}
@@ -229,18 +234,16 @@ public class Forecast implements Parcelable
             }
             catch (IllegalStateException e)
             {
-            	//if an IllegalSTateException is trapped, set the receiver message
+            	// if an IllegalSTateException is trapped, set the receiver message
             	Receiver.SetMessage(e.toString());
-        		//Log.e(TAG, e.toString() + params[0]);
             }
             catch (Exception e)
             {
-            	//if a general exception is trapped, set the receiver message
+            	// if a general exception is trapped, set the receiver message
             	Receiver.SetMessage(e.toString());
-        		//Log.e(TAG, e.toString());
             }
 
-            return forecast;//return the forecast object
+            return forecast; // return the forecast object
         }
         
     	/**
@@ -252,37 +255,42 @@ public class Forecast implements Parcelable
         {
         	try
         	{
-        		//get a new JSON object
+        		// get a new JSON object
         		JSONObject jToken = new JSONObject(json);
         		
-        		//if it has an hourly forecast
+        		// if it has an hourly forecast
         		if(jToken.has("forecastHourlyList"))
         		{
-        			//get the JSON array
+        			// get the JSON array
         			JSONObject fc = jToken.getJSONArray("forecastHourlyList").getJSONObject(0);
         			
-        			//populate class values based on the array
+        			// populate class values based on the array
         			forecast.Temp = fc.getString("temperature");
         			forecast.FeelsLike = fc.getString("feelsLike");
         			forecast.Humid = fc.getString("humidity");
         			forecast.PrecipChance = fc.getString("chancePrecip");
         			forecast.Time = fc.getString("dateTime");
-        			//change the returned time from a string to a date object
-        			Date date = new Date(Long.valueOf(forecast.Time));
-        			//create a format for the date/time
-        			SimpleDateFormat format = new SimpleDateFormat("hh:mm a", Locale.US);
-        			//set the format's TimeZone (WeatherBug adjusts for time so set back to GMT)
-        			format.setTimeZone(TimeZone.getTimeZone("gmt"));
-        			//apply the format to the forcast.timeObjcet
-        			forecast.Time = format.format(date);
+        			
+        			// set the conditions string to be the name of the icon
         			this.conditions = fc.getString("icon");
+        			
+        			// change the returned time from a string to a date object
+        			Date date = new Date(Long.valueOf(forecast.Time));
+        			
+        			// create a format for the date/time
+        			SimpleDateFormat format = new SimpleDateFormat("hh:mm a", Locale.US);
+        			
+        			// set the format's TimeZone (WeatherBug adjusts for time so set back to GMT)
+        			format.setTimeZone(TimeZone.getTimeZone("gmt"));
+        			
+        			// apply the format to the forcast.timeObjcet
+        			forecast.Time = format.format(date);
         		}
         	}
         	catch(JSONException e)
         	{
-        		//if the JSONException is caught, set the receiver's message
+        		// if the JSONException is caught, set the receiver's message
         		Receiver.SetMessage(e.toString());
-        		//Log.e(Forecast.TAG, e.toString());
         	}
         }
 
@@ -292,7 +300,7 @@ public class Forecast implements Parcelable
     	 */
         protected void onPostExecute(Forecast forecast)
         {
-        	//call the listener's onForecastLoaded method
+        	// call the listener's onForecastLoaded method
             this.listener.onForecastLoaded(forecast);
         }
 
@@ -306,32 +314,31 @@ public class Forecast implements Parcelable
         {
             try
             {
-            	//get the bitmap image  from a URL
+            	// get the bitmap image  from a URL
                 URL weatherURL = new URL(String.format(ImageURL, conditionString));
-                //create a bitmap options object
+                
+                // create a bitmap options object
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 if (bitmapSampleSize != -1)
                 {
                     options.inSampleSize = bitmapSampleSize;
                 }
-                //set the class's bitmap value
+                
+                // set the class's bitmap value
                 forecast.Image = BitmapFactory.decodeStream(weatherURL.openStream(), null, options);
             }
-            //handle any possible exceptions by showing Toast
+            // handle any possible exceptions by showing Toast
             catch (MalformedURLException e)
             {
             	Receiver.SetMessage(e.toString());
-        		//Log.e(TAG, e.toString());
             }
             catch (IOException e)
             {
             	Receiver.SetMessage(e.toString());
-        		//Log.e(TAG, e.toString());
             }
             catch (Exception e)
             {
             	Receiver.SetMessage(e.toString());
-        		//Log.e(TAG, e.toString());
             }
         }
     }
